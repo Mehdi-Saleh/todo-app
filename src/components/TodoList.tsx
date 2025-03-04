@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Task from "./Task";
 import TodoTopBar from "./TodoTopBar";
 
@@ -12,18 +12,32 @@ function TodoList()
 {
     const [ tasks, setTasks ] = useState<TaskProps[]>([]);
 
-    const addTask = ( text:string, isDone: boolean ) => { 
-        console.log( String(tasks.some( task => task.text === text) ) );
+    const loadTasks = () => {
+        const data = localStorage.getItem( "tasks" );
+        if ( !data )
+            return;
+
+        const newTasks = JSON.parse( data );
+        setTasks( newTasks );
+    }
+
+    const saveTasks = () => {
+        const data = JSON.stringify( tasks );
+        if ( data !== "[]" )
+            localStorage.setItem( "tasks", data );
+    }
+
+    useEffect( () => { loadTasks(); }, [] );
+    useEffect( () => { saveTasks(); }, [ tasks ] );
+
+    const addTask = ( text:string, isDone: boolean ) => {
         if (!tasks.some( task => task.text === text )) 
             setTasks( [...tasks, { text: text, isDone: isDone }] )
-        };
+    };
     const deleteTask = ( text: string ) => {
         setTasks(tasks.filter(task => task.text !== text));
-        }
+    };
     const toggleIsDone = ( text: string ) => {
-        // const isDone = tasks.find( task => task.text === text )?.isDone;
-        // deleteTask( text );
-        // addTask( text, !isDone );
         const newTasks = [...tasks];
         const task = newTasks.find(
         t => t.text === text
@@ -31,7 +45,7 @@ function TodoList()
         if (task)
             task.isDone = !task?.isDone;
         setTasks( newTasks );
-}
+    };
 
 
     return (
